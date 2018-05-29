@@ -17,38 +17,45 @@ pragma solidity ^0.4.18;
  *
  * @author Boogerwooger <sergey.prilutskiy@smartz.io>
  */
+import 'openzeppelin-solidity/contracts/token/ERC20/MintableToken.sol';
 
 contract MerkleAirdrop {
 
 	address owner;
 	bytes32 merkle_root;
+	// address of contrract, that can mint tokens 
+	// it must allow our airdrop contract to do this
+	address token_to_mint;
+	uint256 NUM_TOKENS_TO_MINT = 100;
+
 	// fix already minted addresses
 	mapping (address => bool) spent;
-	event Mint(address, uint256);
-	uint256 tokensToMint = 100;
+	event AirdropMint(address, uint256);
 
-    constructor(bytes32 _merkle_root) public {
+    constructor(address _token_to_mint, bytes32 _merkle_root) public {
     	owner = msg.sender;
-		merkle_root = _merkle_root; 
+		token_to_mint = _token_to_mint;
+		merkle_root = _merkle_root;
 	}
 
-
-	function mint_by_merkle_proof(bytes proof) public {
+	function mint_by_merkle_proof(bytes32[] proof) public returns(bool) {
 		require(spent[msg.sender] != true);
-		if (checkProof(proof, merkle_root, bytes32(msg.sender))) {
+		if (checkProof(proof, bytes32(msg.sender))) {
 			spent[msg.sender] = true;
-			emit Mint(msg.sender, tokensToMint);
+			if (MintableToken(token_to_mint).mint(msg.sender, NUM_TOKENS_TO_MINT) == true) {
+				emit AirdropMint(msg.sender, NUM_TOKENS_TO_MINT);
+				return true;
+			}
 		}
+		return false;
 	}
 
-	function checkProof(bytes proof, bytes32 root, bytes32 hash) public pure returns (bool) {
+	function checkProof(bytes32[] proof, bytes32 hash) view public returns (bool) {
 	    bytes32 el;
     	bytes32 h = hash;
 
-		for (uint256 i = 32; i <= proof.length; i += 32) {
-			assembly {
-				el := mload(add(proof, i))
-			}
+		for (uint i = 0; i <= proof.length - 1; i += 1) {
+			el = proof[i];
 
 			if (h < el) {
 				h = keccak256(h, el);
@@ -57,6 +64,6 @@ contract MerkleAirdrop {
 			}
 		}
 
-		return h == root;
+		return h == merkle_root;
 	}
 }

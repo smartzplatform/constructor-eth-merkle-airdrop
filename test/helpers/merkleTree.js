@@ -14,6 +14,11 @@ export default class MerkleTree {
     this.layers = this.getLayers(this.elements);
   }
 
+  // [FIXME] debug
+  getTreeLayers () {
+	return this.layers;
+  }
+
   getLayers (elements) {
     if (elements.length === 0) {
       return [['']];
@@ -123,6 +128,10 @@ export default class MerkleTree {
     }
 
     return arr.map(el => '0x' + el.toString('hex'));
+  }
+
+  bufToHex(el) {
+  	return '0x' + el.toString('hex');
   }
 
   sortAndConcat (...args) {
