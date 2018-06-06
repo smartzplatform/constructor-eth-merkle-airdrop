@@ -1,7 +1,7 @@
 'use strict';
 import {sha3, bufferToHex} from 'ethereumjs-util';
 
-
+import assertBnEq from '../test/helpers/assertBigNumbersEqual';
 import MerkleTree from '../test/helpers/merkleTree';
 import expectThrow from '../test/helpers/expectThrow';
 
@@ -49,7 +49,7 @@ contract('MerkleAirdrop', function(accs) {
 		const addresses_list_not_allowed = [];
 
 		let i = 0;
-		while (i++ < 33) {
+		while (i++ < 3) {
 			let acc = '' + web3.personal.newAccount('' + i);
 			if (i % 2 == 0) {
 				addresses_list_allowed.push(acc);
@@ -98,7 +98,8 @@ contract('MerkleAirdrop', function(accs) {
 		const leaf = await '0x' + sha3(roles.user1).toString('hex');
 		
       	assert.isOk(await merkle_contract.mint_by_merkle_proof(user1_proof, {from: roles.user1}), 'mint_by_merkle_proof failed');
-		l(await mintableToken.balanceOf(roles.user1));		
+		// [TODO] - move into token interface
+		// assertBnEq(await mintableToken.balanceOf(roles.user1), await merkle_contract.NUM_TOKENS_TO_MINT(), "minted wrong token count");		
 
 	});
 

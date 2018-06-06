@@ -26,7 +26,7 @@ contract MerkleAirdrop {
 	// address of contrract, that can mint tokens 
 	// it must allow our airdrop contract to do this
 	address token_to_mint;
-	uint256 NUM_TOKENS_TO_MINT = 100;
+	uint256 public NUM_TOKENS_TO_MINT = 100;
 
 	// fix already minted addresses
 	mapping (address => bool) spent;
