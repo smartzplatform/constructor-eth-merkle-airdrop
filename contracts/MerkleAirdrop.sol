@@ -9,11 +9,11 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND (express or implied).
  */
 
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.23;
 
 /**
  * @title MerkleAirdrop
- * Mints fixed amount of tokens to anybody, presented merkle proof for merkle root, placed in contract
+ * Transfers fixed amount of tokens to anybody, presented merkle proof for merkle root, placed in contract
  *
  * @author Boogerwooger <sergey.prilutskiy@smartz.io>
  */
@@ -23,35 +23,44 @@ contract MerkleAirdrop {
 
 	address owner;
 	bytes32 merkle_root;
-	// address of contrract, that can mint tokens 
-	// it must allow our airdrop contract to do this
-	address token_to_mint;
-	uint256 public NUM_TOKENS_TO_MINT = 100;
+
+	// address of contract, having "transfer" function 
+	// airdrop contract must have ENOUGH TOKENS in its balance to perform transfer
+	MintableToken token_contract;
+	uint256 public num_tokens_to_transfer;
 
 	// fix already minted addresses
 	mapping (address => bool) spent;
-	event AirdropMint(address, uint256);
+	event AirdropTransfer(address addr, uint256 num);
 
-    constructor(address _token_to_mint, bytes32 _merkle_root) public {
+   constructor(address _token_contract, bytes32 _merkle_root, uint256 _num_tokens_to_transfer) public {
     	owner = msg.sender;
-		token_to_mint = _token_to_mint;
+		num_tokens_to_transfer = _num_tokens_to_transfer;
+		token_contract = MintableToken(_token_contract);
 		merkle_root = _merkle_root;
 	}
 
-	function mint_by_merkle_proof(bytes32[] proof) public returns(bool) {
-		require(spent[msg.sender] != true);
-		if (checkProof(proof, bytes32(msg.sender))) {
-			spent[msg.sender] = true;
-			if (MintableToken(token_to_mint).mint(msg.sender, NUM_TOKENS_TO_MINT) == true) {
-				emit AirdropMint(msg.sender, NUM_TOKENS_TO_MINT);
-				return true;
-			}
+	function mint_by_merkle_proof(bytes32[] proof, address who) public returns(bool) {
+		require(spent[who] != true);
+		
+		if (!checkProof(proof, keccak256(who))) {
+			return false;
 		}
+
+		spent[who] = true;
+
+		// require(token_contract.balanceOf(address(this)) >= num_tokens_to_transfer);
+
+		if (token_contract.transfer(who, num_tokens_to_transfer) == true) {
+			emit AirdropTransfer(msg.sender, num_tokens_to_transfer);
+			return true;
+		}
+
 		return false;
 	}
 
 	function checkProof(bytes32[] proof, bytes32 hash) view public returns (bool) {
-	    bytes32 el;
+	   bytes32 el;
     	bytes32 h = hash;
 
 		for (uint i = 0; i <= proof.length - 1; i += 1) {

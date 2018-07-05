@@ -24,8 +24,8 @@
     "babel-preset-stage-2": "^6.23.0",
     "babel-preset-stage-3": "^6.23.0",
     "babel-register": "^6.26.0",
-    "truffle": "^4.1.8",
-    "openzeppelin-solidity": "1.9.0",
-    "ethereumjs-util": "^5.1.2"
+    "ethereumjs-util": "^5.1.2",
+    "openzeppelin-solidity": "1.10.0",
+    "truffle": "^4.1.13"
   }
 }
