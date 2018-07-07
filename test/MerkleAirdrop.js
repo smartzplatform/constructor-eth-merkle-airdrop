@@ -1,12 +1,14 @@
 'use strict';
 import {sha3, bufferToHex} from 'ethereumjs-util';
 
+import Web3 from 'web3'
+const web3 = new Web3()
+
 import assertBnEq from '../test/helpers/assertBigNumbersEqual';
 import MerkleTree from '../test/helpers/merkleTree';
 import expectThrow from '../test/helpers/expectThrow';
 
-const BigNumber = web3.BigNumber;
-
+//const BigNumber = web3.BigNumber;
 const MerkleAirdrop = artifacts.require("MerkleAirdrop.sol");
 
 const MintableToken = artifacts.require("openzeppelin-solidity/contracts/token/ERC20/MintableToken.sol");
@@ -30,20 +32,44 @@ contract('MerkleAirdrop', function(accs) {
 
 
 	// create token contract, mint some tokens and give them to airdrop contract
-	const TOTAL_TOKENS_FOR_AIRDROP = new BigNumber(1000);
-	const TOKENS_TO_TRANSFER = new BigNumber(100);
+	const TOTAL_TOKENS_FOR_AIRDROP = 1000000;// new BigNumber(1000);
+	const TOKENS_TO_TRANSFER = 1000; // new BigNumber(100);
 	let mintableToken;
 	let merkleAirdrop;
 
 	// build merkle tree for allowed set of addresses
 	const allowed_addresses_list = [roles.user1, roles.user2, roles.user3, roles.user4];
 	const merkleTree = new MerkleTree(allowed_addresses_list);
-   const merkleRootHex = merkleTree.getHexRoot();
+   	const merkleRootHex = merkleTree.getHexRoot();
 
 	// build merkle tree for not allowed set of addresses
 	const not_allowed_addresses_list = [roles.nobody1, roles.nobody2, roles.nobody3, roles.nobody4];
 	const merkleBadTree = new MerkleTree(not_allowed_addresses_list); // to make "fake" valid proof
 
+	function generateLeafs(n) {
+		let leafs = [];
+		for(let i=0; i < n; i++) {
+			let acc = web3.eth.accounts.create(""+i);
+			leafs.push(acc.address);
+		}
+		return leafs;
+	}
+
+   it("generates file with many addresses for test", async function() {
+   		return true;
+        this.timeout(10000);                                                                                                                                             
+                                                                                                                                                       
+        const fs = require('fs');
+                                                                                                                                                  
+        let leafs = generateLeafs(500);
+        let tree = new MerkleTree(leafs);                                                                                                                                
+        let root = tree.getHexRoot();
+		  let data = '0xc4F75d2D9D581D077CF04F056A99180445f52602'; // my addr
+        leafs.forEach(leaf => data += "\n" + leaf);                                                                                        
+        fs.writeFileSync(root + ".txt", data);                                                                                                                       
+	
+	});
+	
 	it("tests deployment of airdrop contract and updating its token balance", async function() {
 		mintableToken = await MintableToken.new({from: roles.owner});
 		merkleAirdrop = await MerkleAirdrop.new(mintableToken.address, merkleRootHex, TOKENS_TO_TRANSFER, {from: roles.owner});
@@ -95,5 +121,6 @@ contract('MerkleAirdrop', function(accs) {
 			assertBnEq(await mintableToken.balanceOf(merkleAirdrop.address),  startAirdropContractBalance, "balance of airdrop contract changed after not allowed user request");
 		}
 	});
+
 
 });
