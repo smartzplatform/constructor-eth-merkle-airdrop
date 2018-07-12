@@ -40,6 +40,15 @@ contract MerkleAirdrop {
         merkle_root = _merkle_root;
     }
 
+	function claim_rest_of_tokens_and_selfdestruct() public returns(bool) {
+		// only owner 
+		require(msg.sender == owner);
+		require(token_contract.balanceOf(address(this)) >= 0);
+		require(token_contract.transfer(owner, token_contract.balanceOf(address(this))));
+		selfdestruct(owner);
+		return true;
+	}
+
     function mint_by_merkle_proof(bytes32[] proof, address who) public returns(bool) {
     	require(spent[who] != true);
         

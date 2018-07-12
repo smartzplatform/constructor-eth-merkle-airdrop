@@ -121,6 +121,17 @@ contract('MerkleAirdrop', function(accs) {
 			assertBnEq(await mintableToken.balanceOf(merkleAirdrop.address),  startAirdropContractBalance, "balance of airdrop contract changed after not allowed user request");
 		}
 	});
+   
+   	it("tests for claiming all tokens on contract's balance and selfdestruct", async function() {
+		let startAirdropContractBalance = await mintableToken.balanceOf(merkleAirdrop.address)
+		let startUserBalance = await mintableToken.balanceOf(roles.owner);
+
+		await expectThrow(merkleAirdrop.claim_rest_of_tokens_and_selfdestruct({from: roles.user1}), 'claiming rest of tokens by not owner did not broke call');
+		assert.isOk(await merkleAirdrop.claim_rest_of_tokens_and_selfdestruct({from: roles.owner}), 'claiming rest of tokens by owner did not return true');
+		assertBnEq(await mintableToken.balanceOf(roles.owner), startUserBalance.plus(startAirdropContractBalance), "balance of owned was not increased after caliming all rest of tokens");
+		assertBnEq(await mintableToken.balanceOf(merkleAirdrop.address), 0, "balance of contract after claiming tokens not zero");
+	});
+
 
 
 });
