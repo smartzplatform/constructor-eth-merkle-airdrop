@@ -76,7 +76,7 @@ class Constructor(ConstructorInstance):
                     'title': 'Merkle proof',                                                                                                                             
                     'ui:widget': 'merkleProof',                                                                                                                          
                     'ui:options': {                                                                                                                                      
-                        'blockchain': 'ethereum',                                                                                                                             
+                        'blockchain': 'eth',                                                                                                                             
                     }                                                                                                                                                    
                 }]
             }
@@ -421,7 +421,7 @@ contract MerkleAirdrop {
         owner = msg.sender;
         num_tokens_to_transfer = %num_tokens_to_transfer%;
         token_contract = %token_address%;
-        merkle_root = %num_tokens_to_transfer%;
+        merkle_root = %merkle_root%;
         %payment_code%
     }
 
