@@ -60,7 +60,7 @@ class Constructor(ConstructorInstance):
         return {
             "result": "success",
             'source': source,
-            'contract_name': "Merkle Airdrop"
+            'contract_name': "MerkleAirdrop"
         }
 
     def post_construct(self, fields, abi_array):
@@ -71,9 +71,13 @@ class Constructor(ConstructorInstance):
                 'sorting_order': 20,
                 'description': 'Mint tokens',
                 'inputs': [{
-                    'title': 'Merkle proof',
-                },{
                     'title': 'Receipient address',
+                },{                                                                                                                                                      
+                    'title': 'Merkle proof',                                                                                                                             
+                    'ui:widget': 'merkleProof',                                                                                                                          
+                    'ui:options': {                                                                                                                                      
+                        'blockchain': 'ethereum',                                                                                                                             
+                    }                                                                                                                                                    
                 }]
             }
         }
