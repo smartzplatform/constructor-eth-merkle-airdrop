@@ -32,26 +32,26 @@ contract MerkleAirdrop {
     mapping (address => bool) spent;
     event AirdropTransfer(address addr, uint256 num);
 
-	constructor(address _token_contract, bytes32 _merkleRoot) public {
+    constructor(address _token_contract, bytes32 _merkleRoot) public {
         owner = msg.sender;
         token_contract = MintableToken(_token_contract);
         merkleRoot = _merkleRoot;
     }
 
-	function setRoot(bytes32 _merkleRoot) public { // onlyOwner [FIXME]
-		require(msg.sender == owner);
-		require(_merkleRoot != 0);
-		merkleRoot = _merkleRoot;
-	}
+    function setRoot(bytes32 _merkleRoot) public { // onlyOwner [FIXME]
+        require(msg.sender == owner);
+        require(_merkleRoot != 0);
+        merkleRoot = _merkleRoot;
+    }
 
-	function claim_rest_of_tokens_and_selfdestruct() public returns(bool) {
-		// only owner 
-		require(msg.sender == owner);
-		require(token_contract.balanceOf(address(this)) >= 0);
-		require(token_contract.transfer(owner, token_contract.balanceOf(address(this))));
-		selfdestruct(owner);
-		return true;
-	}
+    function claim_rest_of_tokens_and_selfdestruct() public returns(bool) {
+        // only owner 
+        require(msg.sender == owner);
+        require(token_contract.balanceOf(address(this)) >= 0);
+        require(token_contract.transfer(owner, token_contract.balanceOf(address(this))));
+        selfdestruct(owner);
+        return true;
+    }
 
     function addressToAsciiString(address x) internal pure returns (string) {
         bytes memory s = new bytes(40);
@@ -71,56 +71,56 @@ contract MerkleAirdrop {
     }
 
 
-	function uintToStr(uint i) internal pure returns (string){
-    	if (i == 0) return "0";
-    	uint j = i;
-    	uint length;
-    	while (j != 0){
-        	length++;
-        	j /= 10;
-    	}
-    	bytes memory bstr = new bytes(length);
-    	uint k = length - 1;
-    	while (i != 0){
-        	bstr[k--] = byte(48 + i % 10);
-        	i /= 10;
-    	}
-    	return string(bstr);
-	}
+    function uintToStr(uint i) internal pure returns (string){
+        if (i == 0) return "0";
+        uint j = i;
+        uint length;
+        while (j != 0){
+            length++;
+            j /= 10;
+        }
+        bytes memory bstr = new bytes(length);
+        uint k = length - 1;
+        while (i != 0){
+            bstr[k--] = byte(48 + i % 10);
+            i /= 10;
+        }
+        return string(bstr);
+    }
 
-	function leaf_from_address_and_num_tokens(address _a, uint256 _n) public pure returns(bytes32 ) {
-		string memory prefix = "0x";
-		string memory space = " ";
+    function leaf_from_address_and_num_tokens(address _a, uint256 _n) public pure returns(bytes32 ) {
+        string memory prefix = "0x";
+        string memory space = " ";
 
-		// file with addresses and tokens have this format: "0x123...DEF 999", where 999 - num tokens
-		// function simply calculates hash of such a string, given the target adddres and num_tokens
-		
-    	bytes memory _ba = bytes(prefix);
-    	bytes memory _bb = bytes(addressToAsciiString(_a));
-    	bytes memory _bc = bytes(space);
-    	bytes memory _bd = bytes(uintToStr(_n));
-    	string memory abcde = new string(_ba.length + _bb.length + _bc.length + _bd.length);
-	    bytes memory babcde = bytes(abcde);
-    	uint k = 0;
-    	for (uint i = 0; i < _ba.length; i++) babcde[k++] = _ba[i];
-    	for (i = 0; i < _bb.length; i++) babcde[k++] = _bb[i];
-    	for (i = 0; i < _bc.length; i++) babcde[k++] = _bc[i];
-    	for (i = 0; i < _bd.length; i++) babcde[k++] = _bd[i];
+        // file with addresses and tokens have this format: "0x123...DEF 999", where 999 - num tokens
+        // function simply calculates hash of such a string, given the target adddres and num_tokens
+        
+        bytes memory _ba = bytes(prefix);
+        bytes memory _bb = bytes(addressToAsciiString(_a));
+        bytes memory _bc = bytes(space);
+        bytes memory _bd = bytes(uintToStr(_n));
+        string memory abcde = new string(_ba.length + _bb.length + _bc.length + _bd.length);
+        bytes memory babcde = bytes(abcde);
+        uint k = 0;
+        for (uint i = 0; i < _ba.length; i++) babcde[k++] = _ba[i];
+        for (i = 0; i < _bb.length; i++) babcde[k++] = _bb[i];
+        for (i = 0; i < _bc.length; i++) babcde[k++] = _bc[i];
+        for (i = 0; i < _bd.length; i++) babcde[k++] = _bd[i];
 
-    	return bytes32(keccak256(abcde));
-	}
+        return bytes32(keccak256(abcde));
+    }
 
 
     function mintByMerkleProof(bytes32[] _proof, address _who, uint256 _amount) public returns(bool) {
-    	require(spent[_who] != true);
-    	require(_amount > 0);
-    	// require(msg.sender = _who); // makes not possible to mint tokens for somebody, uncomment for more strict version
+        require(spent[_who] != true);
+        require(_amount > 0);
+        // require(msg.sender = _who); // makes not possible to mint tokens for somebody, uncomment for more strict version
         
         if (!checkProof(_proof, leaf_from_address_and_num_tokens(_who, _amount))) {
             return false;
         }
 
-		spent[_who] = true;
+        spent[_who] = true;
 
         if (token_contract.transfer(_who, _amount) == true) {
             emit AirdropTransfer(_who, _amount);
@@ -130,8 +130,8 @@ contract MerkleAirdrop {
         return false;
     }
 
-	function checkProof(bytes32[] proof, bytes32 hash) view public returns (bool) {
-    	bytes32 el;
+    function checkProof(bytes32[] proof, bytes32 hash) view public returns (bool) {
+        bytes32 el;
         bytes32 h = hash;
 
         for (uint i = 0; i <= proof.length - 1; i += 1) {
