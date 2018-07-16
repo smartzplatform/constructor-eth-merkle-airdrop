@@ -27,14 +27,6 @@ class Constructor(ConstructorInstance):
                     "default" : "0x996623f01f9e1d56db146942922a867727beb35c",
                     "$ref": "#/definitions/address"                                                                                                              
                 },
-                "tokenDecimals": {                                                                                                                                       
-            "title": "Token decimals",                                                                                                                           
-                    "description": "Token decimals count (0..255)",                                                                                                      
-                    "type": "integer",
-            "default": 2,                                                                                                                                  
-                    "minimum": 0,                                                                                                                                      
-                    "maximum": 18                                                                                                                                     
-                },                  
                 "merkleRoot": {
                     "description": "Just type text, hash (keccak256) of it will be sent",
                     "default": "0x364375476c3df5ae1914e143bacf08df1a792ff0e7e4e46f70a96c574479bdab",
@@ -55,7 +47,6 @@ class Constructor(ConstructorInstance):
 
         source = self.__class__._TEMPLATE \
             .replace('%token_address%', fields['tokenAddress']) \
-            .replace('%token_decimals%', fields['tokenDecimals']) \
             .replace('%merkle_root%', fields['merkleRoot']);
 
         return {
@@ -406,6 +397,7 @@ contract MintableToken is StandardToken, Ownable {
   }   
 }
 
+
 contract MerkleAirdrop {
 
     address owner;
@@ -419,10 +411,10 @@ contract MerkleAirdrop {
     mapping (address => bool) spent;
     event AirdropTransfer(address addr, uint256 num);
 
-    constructor(address _token_contract, bytes32 _merkleRoot) public {
+    constructor() public {
         owner = msg.sender;
-        token_contract = MintableToken(_token_contract);
-        merkleRoot = _merkleRoot;
+        token_contract = %token_address%;
+        merkleRoot = %merkle_root%;
     }
 
     function setRoot(bytes32 _merkleRoot) public { // onlyOwner [FIXME]
@@ -534,4 +526,5 @@ contract MerkleAirdrop {
         return h == merkleRoot;
     }
 }
+
 """
