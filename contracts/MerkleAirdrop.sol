@@ -27,15 +27,13 @@ contract MerkleAirdrop {
     // address of contract, having "transfer" function 
     // airdrop contract must have ENOUGH TOKENS in its balance to perform transfer
     MintableToken token_contract;
-    uint256 public num_tokens_to_transfer;
 
     // fix already minted addresses
     mapping (address => bool) spent;
     event AirdropTransfer(address addr, uint256 num);
 
-	constructor(address _token_contract, bytes32 _merkle_root, uint256 _num_tokens_to_transfer) public {
+	constructor(address _token_contract, bytes32 _merkle_root) public {
         owner = msg.sender;
-        num_tokens_to_transfer = _num_tokens_to_transfer;
         token_contract = MintableToken(_token_contract);
         merkle_root = _merkle_root;
     }
@@ -49,19 +47,77 @@ contract MerkleAirdrop {
 		return true;
 	}
 
-    function mint_by_merkle_proof(bytes32[] proof, address who) public returns(bool) {
-    	require(spent[who] != true);
+    function addressToAsciiString(address x) internal pure returns (string) {
+        bytes memory s = new bytes(40);
+        for (uint i = 0; i < 20; i++) {
+            byte b = byte(uint8(uint(x) / (2**(8*(19 - i)))));
+            byte hi = byte(uint8(b) / 16);
+            byte lo = byte(uint8(b) - 16 * uint8(hi));
+            s[2*i] = char(hi);
+            s[2*i+1] = char(lo);            
+        }
+        return string(s);
+    }
+    
+    function char(byte b) internal pure returns (byte c) {
+        if (b < 10) return byte(uint8(b) + 0x30);
+        else return byte(uint8(b) + 0x57);
+    }
+
+
+	function uintToStr(uint i) internal view returns (string){
+    	if (i == 0) return "0";
+    	uint j = i;
+    	uint length;
+    	while (j != 0){
+        	length++;
+        	j /= 10;
+    	}
+    	bytes memory bstr = new bytes(length);
+    	uint k = length - 1;
+    	while (i != 0){
+        	bstr[k--] = byte(48 + i % 10);
+        	i /= 10;
+    	}
+    	return string(bstr);
+	}
+
+	function leaf_from_address_and_num_tokens(address _a, uint256 _n) public view returns(bytes32 ) {
+		string memory prefix = "0x";
+		string memory space = " ";
+
+		// file with addresses and tokens have this format: "0x123...DEF 999", where 999 - num tokens
+		// function simply calculates hash of such a string, given the target adddres and num_tokens
+		
+    	bytes memory _ba = bytes(prefix);
+    	bytes memory _bb = bytes(addressToAsciiString(_a));
+    	bytes memory _bc = bytes(space);
+    	bytes memory _bd = bytes(uintToStr(_n));
+    	string memory abcde = new string(_ba.length + _bb.length + _bc.length + _bd.length);
+	    bytes memory babcde = bytes(abcde);
+    	uint k = 0;
+    	for (uint i = 0; i < _ba.length; i++) babcde[k++] = _ba[i];
+    	for (i = 0; i < _bb.length; i++) babcde[k++] = _bb[i];
+    	for (i = 0; i < _bc.length; i++) babcde[k++] = _bc[i];
+    	for (i = 0; i < _bd.length; i++) babcde[k++] = _bd[i];
+
+    	return bytes32(keccak256(abcde));
+	}
+
+
+    function mint_by_merkle_proof(bytes32[] _proof, address _who, uint256 _amount) public returns(bool) {
+    	require(spent[_who] != true);
+    	require(_amount > 0);
+    	// require(msg.sender = _who); // makes not possible to mint tokens for somebody, uncomment for more strict version
         
-        if (!checkProof(proof, keccak256(who))) {
+        if (!checkProof(_proof, leaf_from_address_and_num_tokens(_who, _amount))) {
             return false;
         }
 
-        require(token_contract.balanceOf(address(this)) >= num_tokens_to_transfer);
-        
-		spent[who] = true;
+		spent[_who] = true;
 
-        if (token_contract.transfer(who, num_tokens_to_transfer) == true) {
-            emit AirdropTransfer(msg.sender, num_tokens_to_transfer);
+        if (token_contract.transfer(_who, _amount) == true) {
+            emit AirdropTransfer(_who, _amount);
             return true;
         }
 
