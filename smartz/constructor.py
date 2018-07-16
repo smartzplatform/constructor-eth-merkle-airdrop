@@ -16,7 +16,7 @@ class Constructor(ConstructorInstance):
         json_schema = {
             "type": "object",
             "required": [
-                "tokenAddress", "tokenDecimals", "merkleRoot"
+                "tokenAddress", "merkleRoot"
             ],
             "additionalProperties": False,
 
