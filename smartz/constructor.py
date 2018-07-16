@@ -16,7 +16,7 @@ class Constructor(ConstructorInstance):
         json_schema = {
             "type": "object",
             "required": [
-                "tokenAddress", "merkleRoot", "numTokensToTransfer"
+                "tokenAddress", "tokenDecimals", "merkleRoot"
             ],
             "additionalProperties": False,
 
@@ -27,18 +27,19 @@ class Constructor(ConstructorInstance):
                     "default" : "0x996623f01f9e1d56db146942922a867727beb35c",
                     "$ref": "#/definitions/address"                                                                                                              
                 },
+                "tokenDecimals": {                                                                                                                                       
+                    "title": "Token decimals",                                                                                                                           
+                    "description": "Token decimals count (0..255)",                                                                                                      
+                    "type": "integer",
+		    "default": 0,                                                                                                                                  
+                    "minLength": 0,                                                                                                                                      
+                    "maxLength": 4                                                                                                                                     
+                },                  
                 "merkleRoot": {
                     "description": "Just type text, hash (keccak256) of it will be sent",
                     "default": "0x364375476c3df5ae1914e143bacf08df1a792ff0e7e4e46f70a96c574479bdab",
                     "$ref": "#/definitions/hash"
                 },
-                "numTokensToTransfer": {                                                                                                                                       
-                    "title": "Tokens count to transfer",                                                                                                                     
-                    "description": "Tokens count to issue each requesting account",
-                    "default": "1000",
-                    "type": "string",                                                                                                                            
-                    "pattern": "^([1-9][0-9]{0,54}|[0-9]{1,55}\.[0-9]{0,17}[1-9])$"                                                                              
-                }            
             }
         }
 
@@ -54,8 +55,8 @@ class Constructor(ConstructorInstance):
 
         source = self.__class__._TEMPLATE \
             .replace('%token_address%', fields['tokenAddress']) \
-            .replace('%merkle_root%', fields['merkleRoot']) \
-            .replace('%num_tokens_to_transfer%', fields['numTokensToTransfer'])
+            .replace('%token_decimals%', fields['tokenDecimals']) \
+            .replace('%merkle_root%', fields['merkleRoot']);
 
         return {
             "result": "success",
@@ -66,26 +67,40 @@ class Constructor(ConstructorInstance):
     def post_construct(self, fields, abi_array):
 
         function_titles = {
-            'mint_by_merkle_proof': {
+            'mint': {
                 'title': 'Mint Tokens',
                 'sorting_order': 20,
                 'description': 'Mint tokens',
-                'inputs': [{
-                    'title': 'Receipient address',
+                'inputs': [{                                                                                                                                             
+                    'title': 'Requesting address',                                                                                                                      
+                },{                                                                                                                                                      
+                    'title': 'Requesting tokens amount',                                                                                                                            
                 },{                                                                                                                                                      
                     'title': 'Merkle proof',                                                                                                                             
                     'ui:widget': 'merkleProof',                                                                                                                          
                     'ui:options': {                                                                                                                                      
                         'blockchain': 'eth',                                                                                                                             
                     }                                                                                                                                                    
-                }]
-            }
+                }]                  
+            },
+            'setRoot': {                                                                                                                                                 
+                'title': 'Set Merkle Root',                                                                                                                              
+                'sorting_order': 20,                                                                                                                                     
+                'description': 'Set root of Merkle Tree',                                                                                                                
+                'inputs': [{                                                                                                                                             
+                    'title': 'Merkle root',                                                                                                                              
+                    'ui:widget': 'merkleRoot',                                                                                                                           
+                    "ui:options": {                                                                                                                                      
+                        "blockchain": "eth",                                                                                                                             
+                    }                                                                                                                                                    
+                }]                                                                                                                                                       
+            },                   
         }
 
         return {
             "result": "success",
             'function_specs': function_titles,
-            'dashboard_functions': ['mint_by_merkle_proof']
+            'dashboard_functions': ['mint', 'setRoot']
         }
 
 
@@ -388,33 +403,7 @@ contract MintableToken is StandardToken, Ownable {
     totalSupply_ = totalSupply_.add(_amount);
     balances[_to] = balances[_to].add(_amount);
     emit Mint(_to, _amount);
-    emit Transfer(address(0), _to, _amount);
-    return true;
-  }
-
-  /**
-   * @dev Function to stop minting new tokens.
-   * @return True if the operation was successful.
-   */
-  function finishMinting() onlyOwner canMint public returns (bool) {
-    mintingFinished = true;
-    emit MintFinished();
-    return true;
-  }
-}
-
-contract MerkleAirdrop {
-
-    address owner;
-    bytes32 merkle_root;
-
-    // address of contract, having "transfer" function 
-    // airdrop contract must have ENOUGH TOKENS in its balance to perform transfer
-    MintableToken token_contract;
-    uint256 public num_tokens_to_transfer;
-
-    // fix already minted addresses
-    mapping (address => bool) spent;
+    
     event AirdropTransfer(address addr, uint256 num);
 
     constructor() public {

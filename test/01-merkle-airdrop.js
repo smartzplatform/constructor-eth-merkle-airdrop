@@ -92,12 +92,22 @@ contract('MerkleAirdrop', function(accs) {
 			let airdropContractBalance = await mintableToken.balanceOf(merkleAirdrop.address);
 			let userTokenBalance = await mintableToken.balanceOf(userAddress);
 
-			assert.isOk(await merkleAirdrop.mint_by_merkle_proof(merkle_proof, userAddress, numTokens), 'mint_by_merkle_proof did not return true for a valid proof');
+			assert.isOk(await merkleAirdrop.mintByMerkleProof(merkle_proof, userAddress, numTokens), 'mintByMerkleProof() did not return true for a valid proof');
 
 			assertBnEq(await mintableToken.balanceOf(merkleAirdrop.address), airdropContractBalance.minus(numTokens), "balance of airdrop contract was not decreased by numTokens");
 			assertBnEq(await mintableToken.balanceOf(userAddress), userTokenBalance.plus(numTokens), "balance of user was not increased by numTokens");
 		}
 	});
+
+	it("tests setting of merkle root", async function() {
+		leafsArray.push(roles.nobody1 + ' 33');
+        merkleTree = new MerkleTree(leafsArray);                                                                                                                                
+        merkleRootHex = merkleTree.getHexRoot();
+      	await merkleAirdrop.setRoot(merkleRootHex);
+		let newRoot = await merkleAirdrop.merkleRoot();
+      	assert.equal(newRoot, merkleRootHex, 'updated merkle root was not set');
+    });
+
 
    	it("tests for claiming all tokens on contract's balance and selfdestruct", async function() {
 		let startAirdropContractBalance = await mintableToken.balanceOf(merkleAirdrop.address)
@@ -108,5 +118,8 @@ contract('MerkleAirdrop', function(accs) {
 		assertBnEq(await mintableToken.balanceOf(roles.owner), startUserBalance.plus(startAirdropContractBalance), "balance of owned was not increased after caliming all rest of tokens");
 		assertBnEq(await mintableToken.balanceOf(merkleAirdrop.address), 0, "balance of contract after claiming tokens not zero");
 	});
+
+
+	// [FIXME] [FIXME] add more and more tests!!!
 
 });

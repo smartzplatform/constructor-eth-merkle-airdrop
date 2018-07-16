@@ -22,7 +22,7 @@ import 'openzeppelin-solidity/contracts/token/ERC20/MintableToken.sol';
 contract MerkleAirdrop {
 
     address owner;
-    bytes32 merkle_root;
+    bytes32 public merkleRoot;
 
     // address of contract, having "transfer" function 
     // airdrop contract must have ENOUGH TOKENS in its balance to perform transfer
@@ -32,11 +32,17 @@ contract MerkleAirdrop {
     mapping (address => bool) spent;
     event AirdropTransfer(address addr, uint256 num);
 
-	constructor(address _token_contract, bytes32 _merkle_root) public {
+	constructor(address _token_contract, bytes32 _merkleRoot) public {
         owner = msg.sender;
         token_contract = MintableToken(_token_contract);
-        merkle_root = _merkle_root;
+        merkleRoot = _merkleRoot;
     }
+
+	function setRoot(bytes32 _merkleRoot) public { // onlyOwner [FIXME]
+		require(msg.sender == owner);
+		require(_merkleRoot != 0);
+		merkleRoot = _merkleRoot;
+	}
 
 	function claim_rest_of_tokens_and_selfdestruct() public returns(bool) {
 		// only owner 
@@ -65,7 +71,7 @@ contract MerkleAirdrop {
     }
 
 
-	function uintToStr(uint i) internal view returns (string){
+	function uintToStr(uint i) internal pure returns (string){
     	if (i == 0) return "0";
     	uint j = i;
     	uint length;
@@ -82,7 +88,7 @@ contract MerkleAirdrop {
     	return string(bstr);
 	}
 
-	function leaf_from_address_and_num_tokens(address _a, uint256 _n) public view returns(bytes32 ) {
+	function leaf_from_address_and_num_tokens(address _a, uint256 _n) public pure returns(bytes32 ) {
 		string memory prefix = "0x";
 		string memory space = " ";
 
@@ -105,7 +111,7 @@ contract MerkleAirdrop {
 	}
 
 
-    function mint_by_merkle_proof(bytes32[] _proof, address _who, uint256 _amount) public returns(bool) {
+    function mintByMerkleProof(bytes32[] _proof, address _who, uint256 _amount) public returns(bool) {
     	require(spent[_who] != true);
     	require(_amount > 0);
     	// require(msg.sender = _who); // makes not possible to mint tokens for somebody, uncomment for more strict version
@@ -138,6 +144,6 @@ contract MerkleAirdrop {
             }
         }
 
-        return h == merkle_root;
+        return h == merkleRoot;
     }
 }
