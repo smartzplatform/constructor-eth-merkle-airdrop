@@ -58,20 +58,20 @@ class Constructor(ConstructorInstance):
     def post_construct(self, fields, abi_array):
 
         function_titles = {
-            'mint': {
+            'mintByMerkleProof': {
                 'title': 'Mint Tokens',
                 'sorting_order': 30,
                 'description': 'Mint tokens',
-                'inputs': [{                                                                                                                                             
-                    'title': 'Requesting address',                                                                                                                      
-                },{                                                                                                                                                      
-                    'title': 'Requesting tokens amount',                                                                                                                            
-                },{                                                                                                                                                      
+                'inputs': [{                                                                                                                                                      
                     'title': 'Merkle proof',                                                                                                                             
                     'ui:widget': 'merkleProof',                                                                                                                          
                     'ui:options': {                                                                                                                                      
                         'blockchain': 'eth',                                                                                                                             
                     }                                                                                                                                                    
+                },{                                                                                                                                             
+                    'title': 'Requesting address',                                                                                                                      
+                },{                                                                                                                                                      
+                    'title': 'Requesting tokens amount',                                                                                                                            
                 }]                  
             },
             'setRoot': {                                                                                                                                                 
