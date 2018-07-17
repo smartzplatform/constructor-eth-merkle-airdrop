@@ -60,7 +60,7 @@ class Constructor(ConstructorInstance):
         function_titles = {
             'mint': {
                 'title': 'Mint Tokens',
-                'sorting_order': 20,
+                'sorting_order': 30,
                 'description': 'Mint tokens',
                 'inputs': [{                                                                                                                                             
                     'title': 'Requesting address',                                                                                                                      
@@ -85,7 +85,7 @@ class Constructor(ConstructorInstance):
                         "blockchain": "eth",                                                                                                                             
                     }                                                                                                                                                    
                 }]                                                                                                                                                       
-            },                   
+            }                   
         }
 
         return {
@@ -97,7 +97,7 @@ class Constructor(ConstructorInstance):
 
     # language=Solidity
     _TEMPLATE = """
-pragma solidity ^0.4.23;
+pragma solidity ^0.4.20;
 
 library SafeMath {                                                                                                            
   function mul(uint256 a, uint256 b) internal pure returns (uint256) {                                                        
@@ -143,7 +143,7 @@ contract Ownable {
    * @dev The Ownable constructor sets the original `owner` of the contract to the sender
    * account.
    */
-  constructor() public {
+  function Ownable() public {
     owner = msg.sender;
   }
 
@@ -162,7 +162,7 @@ contract Ownable {
    * modifier anymore.
    */
   function renounceOwnership() public onlyOwner {
-    emit OwnershipRenounced(owner);
+    OwnershipRenounced(owner);
     owner = address(0);
   }
 
@@ -180,7 +180,7 @@ contract Ownable {
    */
   function _transferOwnership(address _newOwner) internal {
     require(_newOwner != address(0));
-    emit OwnershipTransferred(owner, _newOwner);
+    OwnershipTransferred(owner, _newOwner);
     owner = _newOwner;
   }
 }
@@ -232,7 +232,7 @@ contract BasicToken is ERC20Basic {
 
     balances[msg.sender] = balances[msg.sender].sub(_value);
     balances[_to] = balances[_to].add(_value);
-    emit Transfer(msg.sender, _to, _value);
+    Transfer(msg.sender, _to, _value);
     return true;
   }
 
@@ -273,7 +273,7 @@ contract StandardToken is ERC20, BasicToken {
     balances[_from] = balances[_from].sub(_value);
     balances[_to] = balances[_to].add(_value);
     allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value);
-    emit Transfer(_from, _to, _value);
+    Transfer(_from, _to, _value);
     return true;
   }
 
@@ -288,7 +288,7 @@ contract StandardToken is ERC20, BasicToken {
    */
   function approve(address _spender, uint256 _value) public returns (bool) {
     allowed[msg.sender][_spender] = _value;
-    emit Approval(msg.sender, _spender, _value);
+    Approval(msg.sender, _spender, _value);
     return true;
   }
 
@@ -327,7 +327,7 @@ contract StandardToken is ERC20, BasicToken {
   {
     allowed[msg.sender][_spender] = (
       allowed[msg.sender][_spender].add(_addedValue));
-    emit Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
+    Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
     return true;
   }
 
@@ -353,7 +353,7 @@ contract StandardToken is ERC20, BasicToken {
     } else {
       allowed[msg.sender][_spender] = oldValue.sub(_subtractedValue);
     }
-    emit Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
+    Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
     return true;
   }
 
@@ -393,7 +393,7 @@ contract MintableToken is StandardToken, Ownable {
   {
     totalSupply_ = totalSupply_.add(_amount);
     balances[_to] = balances[_to].add(_amount);
-    emit Mint(_to, _amount);
+    Mint(_to, _amount);
   }   
 }
 
@@ -411,10 +411,10 @@ contract MerkleAirdrop {
     mapping (address => bool) spent;
     event AirdropTransfer(address addr, uint256 num);
 
-    constructor() public {
+    function MerkleAirdrop(address _tokenAddress, bytes32 _merkleRoot) public {
         owner = msg.sender;
-        token_contract = %token_address%;
-        merkleRoot = %merkle_root%;
+        token_contract = MintableToken(_tokenAddress);
+        merkleRoot = _merkleRoot;
     }
 
     function setRoot(bytes32 _merkleRoot) public { // onlyOwner [FIXME]
@@ -502,7 +502,7 @@ contract MerkleAirdrop {
         spent[_who] = true;
 
         if (token_contract.transfer(_who, _amount) == true) {
-            emit AirdropTransfer(_who, _amount);
+            AirdropTransfer(_who, _amount);
             return true;
         }
 

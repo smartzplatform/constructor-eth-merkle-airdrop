@@ -54,17 +54,18 @@ contract('MerkleAirdrop', function(accs) {
    		// return true;
         this.timeout(10000);                                                                                                                                             
                                                                                                                                                        
-        leafsArray = generateLeafs(20);
+        leafsArray = [];//generateLeafs(20);
 		leafsArray.push(roles.user1 + ' 100');
 		leafsArray.push(roles.user2 + ' 88');
 		leafsArray.push(roles.user3 + ' 99');
 		leafsArray.push(roles.user4 + ' 66');
+		l(roles);
         merkleTree = new MerkleTree(leafsArray);                                                                                                                                
         merkleRootHex = merkleTree.getHexRoot();
 
 		//let data = '';
-        //leafs.forEach(leaf => data += "\n" + leaf);                                                                                        
-        //fs.writeFileSync(root + ".txt", data);
+        //leafsArray.forEach(leaf => data += "\n" + leaf);                                                                                        
+        //fs.writeFileSync(merkleRootHex, data);
 
 	});
 
@@ -85,6 +86,7 @@ contract('MerkleAirdrop', function(accs) {
 			
 			let leaf = leafsArray[i];
 			let merkle_proof = await merkleTree.getHexProof(leaf);
+			await l("For leaf '" + leaf + "' generated proof: [" + merkle_proof + "]");
 
 			let userAddress = leaf.split(" ")[0];
 			let numTokens = leaf.split(" ")[1];
