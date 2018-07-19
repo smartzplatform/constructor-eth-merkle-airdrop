@@ -29,7 +29,7 @@ class Constructor(ConstructorInstance):
                 },
                 "merkleRoot": {
                     "description": "Just type text, hash (keccak256) of it will be sent",
-                    "default": "0x364375476c3df5ae1914e143bacf08df1a792ff0e7e4e46f70a96c574479bdab",
+                    "default": "0xf3447cd854ef56fce3cd4fd15e9a7ab4d97072d20a690e7741915e371cc26d4d",
                     "$ref": "#/definitions/hash"
                 },
             }
@@ -69,12 +69,27 @@ class Constructor(ConstructorInstance):
                         'blockchain': 'eth',                                                                                                                             
                     }                                                                                                                                                    
                 },{                                                                                                                                             
-                    'title': 'Requesting address',                                                                                                                      
+                    'title': 'Requesting address',
                 },{                                                                                                                                                      
                     'title': 'Requesting tokens amount',                                                                                                                            
                 }]                  
             },
-            'setRoot': {                                                                                                                                                 
+           'checkProof': {
+                'title': 'check proof',
+                'sorting_order': 35,
+                'description': 'sssssssssss',
+                'inputs': [{                                                                                                                                                      
+                    'title': 'Merkle proof',                                                                                                                             
+                    'ui:widget': 'merkleProof',                                                                                                                          
+                    'ui:options': {                                                                                                                                      
+                        'blockchain': 'eth',                                                                                                                             
+                    }                                                                                                                                                    
+                },{                                                                                                                                             
+                    'title': 'leaf',                                                                                                                      
+                }]                  
+            },
+   
+         'setRoot': {                                                                                                                                                 
                 'title': 'Set Merkle Root',                                                                                                                              
                 'sorting_order': 20,                                                                                                                                     
                 'description': 'Set root of Merkle Tree',                                                                                                                
@@ -405,7 +420,7 @@ contract MerkleAirdrop {
 
     // address of contract, having "transfer" function 
     // airdrop contract must have ENOUGH TOKENS in its balance to perform transfer
-    MintableToken token_contract;
+    MintableToken public token_contract;
 
     // fix already minted addresses
     mapping (address => bool) spent;
@@ -413,8 +428,8 @@ contract MerkleAirdrop {
 
     function MerkleAirdrop(address _tokenAddress, bytes32 _merkleRoot) public {
         owner = msg.sender;
-        token_contract = MintableToken(_tokenAddress);
-        merkleRoot = _merkleRoot;
+        token_contract = MintableToken(%token_address%);
+        merkleRoot = %merkle_root%;
     }
 
     function setRoot(bytes32 _merkleRoot) public { // onlyOwner [FIXME]
@@ -423,6 +438,10 @@ contract MerkleAirdrop {
         merkleRoot = _merkleRoot;
     }
 
+    function contractTokenBalance() public view returns(uint) {                                                                                                          
+        return token_contract.balanceOf(address(this));                                                                                                                  
+    }      
+                
     function claim_rest_of_tokens_and_selfdestruct() public returns(bool) {
         // only owner 
         require(msg.sender == owner);
@@ -505,7 +524,6 @@ contract MerkleAirdrop {
             AirdropTransfer(_who, _amount);
             return true;
         }
-
         return false;
     }
 

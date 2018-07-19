@@ -44,6 +44,10 @@ contract MerkleAirdrop {
         merkleRoot = _merkleRoot;
     }
 
+	function contractTokenBalance() public view returns(uint) {
+		return token_contract.balanceOf(address(this));
+	}
+
     function claim_rest_of_tokens_and_selfdestruct() public returns(bool) {
         // only owner 
         require(msg.sender == owner);
