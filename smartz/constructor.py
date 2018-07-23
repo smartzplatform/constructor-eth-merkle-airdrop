@@ -29,7 +29,7 @@ class Constructor(ConstructorInstance):
                 },
                 "merkleRoot": {
                     "description": "Just type text, hash (keccak256) of it will be sent",
-                    "default": "0xf3447cd854ef56fce3cd4fd15e9a7ab4d97072d20a690e7741915e371cc26d4d",
+                    "default": "0xbf6a2b304cf029e2c41223a9f378c2299fafd91230050a610c7b8cde803396b0",
                     "$ref": "#/definitions/hash"
                 },
             }
@@ -434,16 +434,15 @@ contract MerkleAirdrop {
 
     function setRoot(bytes32 _merkleRoot) public { // onlyOwner [FIXME]
         require(msg.sender == owner);
-        require(_merkleRoot != 0);
         merkleRoot = _merkleRoot;
     }
 
-    function contractTokenBalance() public view returns(uint) {                                                                                                          
-        return token_contract.balanceOf(address(this));                                                                                                                  
-    }      
-                
+	function contractTokenBalance() public view returns(uint) {
+		return token_contract.balanceOf(address(this));
+	}
+
     function claim_rest_of_tokens_and_selfdestruct() public returns(bool) {
-        // only owner 
+        // only owner
         require(msg.sender == owner);
         require(token_contract.balanceOf(address(this)) >= 0);
         require(token_contract.transfer(owner, token_contract.balanceOf(address(this))));
@@ -458,11 +457,11 @@ contract MerkleAirdrop {
             byte hi = byte(uint8(b) / 16);
             byte lo = byte(uint8(b) - 16 * uint8(hi));
             s[2*i] = char(hi);
-            s[2*i+1] = char(lo);            
+            s[2*i+1] = char(lo);
         }
         return string(s);
     }
-    
+
     function char(byte b) internal pure returns (byte c) {
         if (b < 10) return byte(uint8(b) + 0x30);
         else return byte(uint8(b) + 0x57);
@@ -492,7 +491,7 @@ contract MerkleAirdrop {
 
         // file with addresses and tokens have this format: "0x123...DEF 999", where 999 - num tokens
         // function simply calculates hash of such a string, given the target adddres and num_tokens
-        
+
         bytes memory _ba = bytes(prefix);
         bytes memory _bb = bytes(addressToAsciiString(_a));
         bytes memory _bc = bytes(space);
@@ -513,7 +512,7 @@ contract MerkleAirdrop {
         require(spent[_who] != true);
         require(_amount > 0);
         // require(msg.sender = _who); // makes not possible to mint tokens for somebody, uncomment for more strict version
-        
+
         if (!checkProof(_proof, leaf_from_address_and_num_tokens(_who, _amount))) {
             return false;
         }
@@ -521,10 +520,11 @@ contract MerkleAirdrop {
         spent[_who] = true;
 
         if (token_contract.transfer(_who, _amount) == true) {
-            AirdropTransfer(_who, _amount);
+            emit AirdropTransfer(_who, _amount);
             return true;
         }
-        return false;
+		// throw if transfer fails, no need to spend gaz
+        require(false);
     }
 
     function checkProof(bytes32[] proof, bytes32 hash) view public returns (bool) {
@@ -544,5 +544,4 @@ contract MerkleAirdrop {
         return h == merkleRoot;
     }
 }
-
 """

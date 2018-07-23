@@ -33,7 +33,7 @@ contract('MerkleAirdrop', function(accs) {
 
 	// create token contract, mint some tokens and give them to airdrop contract
 	const TOTAL_TOKENS_FOR_AIRDROP = 1000000;// new BigNumber(1000);
-	const NUM_TOKENS_PER_USER = 100;
+	const NUM_TOKENS_PER_USER = 10;
 	let mintableToken;
 	let merkleAirdrop;
 	let leafsArray = [];
@@ -45,35 +45,34 @@ contract('MerkleAirdrop', function(accs) {
 		for(let i=0; i < n; i++) {
 			let acc = web3.eth.accounts.create(""+i);
 			// lowercase is important!
-			leafs.push('' + acc.address.toLowerCase() + ' ' + NUM_TOKENS_PER_USER);
+			leafs.push('' + acc.address.toLowerCase() + ' ' + 100);
 		}
 		return leafs;
 	}
 
-   it("generates many addresses(of file optionally) for test reads them and builds merkleTree", async function() {
+   it("generates many addresses(of file optionally) for test, reads them and builds merkleTree", async function() {
    		// return true;
-        this.timeout(10000);                                                                                                                                             
-                                                                                                                                                       
-        leafsArray = [];//generateLeafs(20);
+        this.timeout(10000);
+
+        leafsArray = generateLeafs(4);
 		leafsArray.push(roles.user1 + ' 100');
 		leafsArray.push(roles.user2 + ' 88');
 		leafsArray.push(roles.user3 + ' 99');
 		leafsArray.push(roles.user4 + ' 66');
-		l(roles);
-        merkleTree = new MerkleTree(leafsArray);                                                                                                                                
+        merkleTree = new MerkleTree(leafsArray);
         merkleRootHex = merkleTree.getHexRoot();
 
-		//let data = '';
-        //leafsArray.forEach(leaf => data += "\n" + leaf);                                                                                        
-        //fs.writeFileSync(merkleRootHex, data);
-
+		// uncomment here to receive a file with addresses, similar to real file, provided by user
+		// be careful with big list sizes, use concatenation to join them
+        // let data = leafsArray.join("\n");
+        // fs.writeFileSync(merkleRootHex, data);
 	});
 
 	it("tests deployment of airdrop contract and check the pure checkProof function", async function() {
 		mintableToken = await MintableToken.new({from: roles.owner});
 		merkleAirdrop = await MerkleAirdrop.new(mintableToken.address, merkleRootHex, {from: roles.owner});
 		await mintableToken.mint(merkleAirdrop.address, TOTAL_TOKENS_FOR_AIRDROP, {from: roles.owner});
-			
+
 		const user1_proof = await merkleTree.getHexProof(leafsArray[0]);
 		const leaf = await '0x' + sha3(leafsArray[0]).toString('hex');
 
@@ -82,12 +81,12 @@ contract('MerkleAirdrop', function(accs) {
     });
 
  	it("tests for success mint for allowed set of users", async function() {
+		// check correctness of mint for each in leafsArray
 		for(let i = 0; i < leafsArray.length; i++) {
-			
+
 			let leaf = leafsArray[i];
 			let merkle_proof = await merkleTree.getHexProof(leaf);
-			await l("For leaf '" + leaf + "' generated proof: [" + merkle_proof + "]");
-
+			// await l("For string '" + leaf + "', and leaf: '" + '0x' + sha3(leaf).toString('hex') + "' generated proof: " + JSON.stringify(merkle_proof) );
 			let userAddress = leaf.split(" ")[0];
 			let numTokens = leaf.split(" ")[1];
 
@@ -101,14 +100,43 @@ contract('MerkleAirdrop', function(accs) {
 		}
 	});
 
-	it("tests setting of merkle root", async function() {
-		leafsArray.push(roles.nobody1 + ' 33');
-        merkleTree = new MerkleTree(leafsArray);                                                                                                                                
+	it("tests setting of new merkle root and mint for added account", async function() {
+		leafsArray.push(roles.nobody1 + ' 31');
+		leafsArray.push(roles.nobody2 + ' 32');
+		leafsArray.push(roles.nobody3 + ' 33');
+		leafsArray.push(roles.nobody4 + ' 34');
+        merkleTree = new MerkleTree(leafsArray);
         merkleRootHex = merkleTree.getHexRoot();
       	await merkleAirdrop.setRoot(merkleRootHex);
 		let newRoot = await merkleAirdrop.merkleRoot();
+		// await l("new root: " + newRoot);
       	assert.equal(newRoot, merkleRootHex, 'updated merkle root was not set');
+
     });
+
+
+/*   	it("tests for minting for new and previous users in list", async function() {
+		// check minting for new addresses (nobody1 and nobody2, added in previous test)
+		let checkNLastLeafs = 5;
+		for(let i = leafsArray.length - checkNLastLeafs - 1; i < leafsArray.length -1; i++) {
+			l(await merkleAirdrop.merkleRoot());
+			let leaf = leafsArray[i];
+			// let leaf = roles.nobody1 + ' 33';
+			let merkle_proof = await merkleTree.getHexProof(leaf);
+			//await l("For string '" + leaf + "', and leaf: '" + '0x' + sha3(leaf).toString('hex') + "' generated proof: " + JSON.stringify(merkle_proof) );
+			let userAddress = leaf.split(" ")[0];
+			let numTokens = leaf.split(" ")[1];
+
+			await l("Minting for " + leaf);
+			let airdropContractBalance = await mintableToken.balanceOf(merkleAirdrop.address);
+			let userTokenBalance = await mintableToken.balanceOf(userAddress);
+
+			assert.isOk(await merkleAirdrop.mintByMerkleProof(merkle_proof, userAddress, numTokens), 'mintByMerkleProof() did not return true for a valid proof');
+			assertBnEq(await mintableToken.balanceOf(merkleAirdrop.address), airdropContractBalance.minus(numTokens), "balance of airdrop contract was not decreased by numTokens");
+			assertBnEq(await mintableToken.balanceOf(userAddress), userTokenBalance.plus(numTokens), "balance of user was not increased by numTokens");
+		}
+    });
+*/
 
 
    	it("tests for claiming all tokens on contract's balance and selfdestruct", async function() {

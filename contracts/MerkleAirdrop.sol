@@ -24,7 +24,7 @@ contract MerkleAirdrop {
     address owner;
     bytes32 public merkleRoot;
 
-    // address of contract, having "transfer" function 
+    // address of contract, having "transfer" function
     // airdrop contract must have ENOUGH TOKENS in its balance to perform transfer
     MintableToken token_contract;
 
@@ -40,7 +40,6 @@ contract MerkleAirdrop {
 
     function setRoot(bytes32 _merkleRoot) public { // onlyOwner [FIXME]
         require(msg.sender == owner);
-        require(_merkleRoot != 0);
         merkleRoot = _merkleRoot;
     }
 
@@ -49,7 +48,7 @@ contract MerkleAirdrop {
 	}
 
     function claim_rest_of_tokens_and_selfdestruct() public returns(bool) {
-        // only owner 
+        // only owner
         require(msg.sender == owner);
         require(token_contract.balanceOf(address(this)) >= 0);
         require(token_contract.transfer(owner, token_contract.balanceOf(address(this))));
@@ -64,11 +63,11 @@ contract MerkleAirdrop {
             byte hi = byte(uint8(b) / 16);
             byte lo = byte(uint8(b) - 16 * uint8(hi));
             s[2*i] = char(hi);
-            s[2*i+1] = char(lo);            
+            s[2*i+1] = char(lo);
         }
         return string(s);
     }
-    
+
     function char(byte b) internal pure returns (byte c) {
         if (b < 10) return byte(uint8(b) + 0x30);
         else return byte(uint8(b) + 0x57);
@@ -98,7 +97,7 @@ contract MerkleAirdrop {
 
         // file with addresses and tokens have this format: "0x123...DEF 999", where 999 - num tokens
         // function simply calculates hash of such a string, given the target adddres and num_tokens
-        
+
         bytes memory _ba = bytes(prefix);
         bytes memory _bb = bytes(addressToAsciiString(_a));
         bytes memory _bc = bytes(space);
@@ -119,7 +118,7 @@ contract MerkleAirdrop {
         require(spent[_who] != true);
         require(_amount > 0);
         // require(msg.sender = _who); // makes not possible to mint tokens for somebody, uncomment for more strict version
-        
+
         if (!checkProof(_proof, leaf_from_address_and_num_tokens(_who, _amount))) {
             return false;
         }
@@ -130,8 +129,8 @@ contract MerkleAirdrop {
             emit AirdropTransfer(_who, _amount);
             return true;
         }
-
-        return false;
+		// throw if transfer fails, no need to spend gaz
+        require(false);
     }
 
     function checkProof(bytes32[] proof, bytes32 hash) view public returns (bool) {
