@@ -24,12 +24,10 @@ class Constructor(ConstructorInstance):
                 "tokenAddress": {
                     "title": "Token address",                                                                                                                    
                     "description": "Address of ERC20 token to be issued to requesting user",
-                    "default" : "0x996623f01f9e1d56db146942922a867727beb35c",
                     "$ref": "#/definitions/address"                                                                                                              
                 },
                 "merkleRoot": {
                     "description": "Just type text, hash (keccak256) of it will be sent",
-                    "default": "0xbf6a2b304cf029e2c41223a9f378c2299fafd91230050a610c7b8cde803396b0",
                     "$ref": "#/definitions/hash"
                 },
             }
