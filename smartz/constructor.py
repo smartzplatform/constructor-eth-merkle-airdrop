@@ -518,7 +518,7 @@ contract MerkleAirdrop {
         spent[_who] = true;
 
         if (token_contract.transfer(_who, _amount) == true) {
-            emit AirdropTransfer(_who, _amount);
+            AirdropTransfer(_who, _amount);
             return true;
         }
 		// throw if transfer fails, no need to spend gaz
