@@ -64,7 +64,7 @@ class Constructor(ConstructorInstance):
                     'title': 'Merkle proof',                                                                                                                             
                     'ui:widget': 'merkleProof',                                                                                                                          
                     'ui:options': {                                                                                                                                      
-                        'blockchain': 'eth',                                                                                                                             
+                        'blockchain': 'ethereum',                                                                                                                             
                     }                                                                                                                                                    
                 },{                                                                                                                                             
                     'title': 'Requesting address',
@@ -80,7 +80,7 @@ class Constructor(ConstructorInstance):
                     'title': 'Merkle proof',                                                                                                                             
                     'ui:widget': 'merkleProof',                                                                                                                          
                     'ui:options': {                                                                                                                                      
-                        'blockchain': 'eth',                                                                                                                             
+                        'blockchain': 'ethereum',                                                                                                                             
                     }                                                                                                                                                    
                 },{                                                                                                                                             
                     'title': 'leaf',                                                                                                                      
@@ -95,7 +95,7 @@ class Constructor(ConstructorInstance):
                     'title': 'Merkle root',                                                                                                                              
                     'ui:widget': 'merkleRoot',                                                                                                                           
                     "ui:options": {                                                                                                                                      
-                        "blockchain": "eth",                                                                                                                             
+                        "blockchain": "ethereum",                                                                                                                             
                     }                                                                                                                                                    
                 }]                                                                                                                                                       
             }                   
