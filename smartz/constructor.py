@@ -23,12 +23,12 @@ class Constructor(ConstructorInstance):
             "properties": {
                 "tokenAddress": {
                     "title": "Token address",
-                    "description": "Address of ERC20 token to be issued to requesting user",
+                    "description": "Address of ERC20 token contract to be distributed. To make your Airdrop contract able to give away tokens, you should transfer them to it first.",
                     "$ref": "#/definitions/address"
                 },
                 "merkleRoot": {
-                    "title": "Merkle Root",
-                    "description": "Merkle Root will automatically ganerated from airdrop list file",
+                    "title": "Airdrop whitelist",
+                    "description": "Upload .txt file with your Airdrop participant list. File format is <address> <amount in Wei> (one address per line), see (example here)[TODO: ADD LINK]. Be aware that amout of tokens should be set in Wei (smallest quant of your token). File will be converted into Merkle Tree format and uploaded to IPFS. Merkle root and file IPFS address will be added to the Airdrop contract.",
                     "$ref": "#/definitions/hash"
                 },
             }
@@ -65,9 +65,9 @@ class Constructor(ConstructorInstance):
 
         function_titles = {
             'mintByMerkleProof': {
-                'title': 'Mint Tokens',
+                'title': 'Get tokens',
                 'sorting_order': 30,
-                'description': 'Mint tokens',
+                'description': 'Get Airdrop tokens if your address is in the whitelist.',
                 'inputs': [{
                     'title': 'Merkle proof',
                     'ui:widget': 'merkleProof',
@@ -81,9 +81,9 @@ class Constructor(ConstructorInstance):
                 }]
             },
            'checkProof': {
-                'title': 'check proof',
+                'title': 'Check address',
                 'sorting_order': 35,
-                'description': 'sssssssssss',
+                'description': 'Check is your address in Airdrop whitelist',
                 'inputs': [{
                     'title': 'Merkle proof',
                     'ui:widget': 'merkleProof',
@@ -96,11 +96,12 @@ class Constructor(ConstructorInstance):
             },
 
          'setRoot': {
-                'title': 'Set Merkle Root',
+                'title': 'Update airdrop whitelist',
                 'sorting_order': 20,
-                'description': 'Set root of Merkle Tree',
+                'description': 'If you want to change your Airdrop participant list in any way, upload full new list here.',
                 'inputs': [{
                     'title': 'Merkle root',
+                    'description': 'Upload .txt file with your Airdrop participant list. File format is <address> <amount in Wei> (one address per line), see (example here)[TODO: ADD LINK]. Be aware that amout of tokens should be set in Wei (smallest quant of your token). File will be converted into Merkle Tree format and uploaded to IPFS. Merkle root and file IPFS address will be added to the Airdrop contract.',
                     'ui:widget': 'merkleRoot',
                     "ui:options": {
                         "blockchain": "ethereum",
