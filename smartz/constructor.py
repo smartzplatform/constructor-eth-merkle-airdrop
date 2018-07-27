@@ -22,18 +22,26 @@ class Constructor(ConstructorInstance):
 
             "properties": {
                 "tokenAddress": {
-                    "title": "Token address",                                                                                                                    
+                    "title": "Token address",
                     "description": "Address of ERC20 token to be issued to requesting user",
-                    "$ref": "#/definitions/address"                                                                                                              
+                    "$ref": "#/definitions/address"
                 },
                 "merkleRoot": {
-                    "description": "Just type text, hash (keccak256) of it will be sent",
+                    "title": "Merkle Root",
+                    "description": "Merkle Root will automatically ganerated from airdrop list file",
                     "$ref": "#/definitions/hash"
                 },
             }
         }
 
-        ui_schema = {}
+        ui_schema = {
+            "merkleRoot": {
+                "ui:widget": "merkleRoot",
+                "ui:options": {
+                    "blockchain": "ethereum",
+                }
+            }
+        }
 
         return {
             "result": "success",
@@ -60,45 +68,45 @@ class Constructor(ConstructorInstance):
                 'title': 'Mint Tokens',
                 'sorting_order': 30,
                 'description': 'Mint tokens',
-                'inputs': [{                                                                                                                                                      
-                    'title': 'Merkle proof',                                                                                                                             
-                    'ui:widget': 'merkleProof',                                                                                                                          
-                    'ui:options': {                                                                                                                                      
-                        'blockchain': 'ethereum',                                                                                                                             
-                    }                                                                                                                                                    
-                },{                                                                                                                                             
+                'inputs': [{
+                    'title': 'Merkle proof',
+                    'ui:widget': 'merkleProof',
+                    'ui:options': {
+                        'blockchain': 'ethereum',
+                    }
+                },{
                     'title': 'Requesting address',
-                },{                                                                                                                                                      
-                    'title': 'Requesting tokens amount',                                                                                                                            
-                }]                  
+                },{
+                    'title': 'Requesting tokens amount',
+                }]
             },
            'checkProof': {
                 'title': 'check proof',
                 'sorting_order': 35,
                 'description': 'sssssssssss',
-                'inputs': [{                                                                                                                                                      
-                    'title': 'Merkle proof',                                                                                                                             
-                    'ui:widget': 'merkleProof',                                                                                                                          
-                    'ui:options': {                                                                                                                                      
-                        'blockchain': 'ethereum',                                                                                                                             
-                    }                                                                                                                                                    
-                },{                                                                                                                                             
-                    'title': 'leaf',                                                                                                                      
-                }]                  
+                'inputs': [{
+                    'title': 'Merkle proof',
+                    'ui:widget': 'merkleProof',
+                    'ui:options': {
+                        'blockchain': 'ethereum',
+                    }
+                },{
+                    'title': 'leaf',
+                }]
             },
-   
-         'setRoot': {                                                                                                                                                 
-                'title': 'Set Merkle Root',                                                                                                                              
-                'sorting_order': 20,                                                                                                                                     
-                'description': 'Set root of Merkle Tree',                                                                                                                
-                'inputs': [{                                                                                                                                             
-                    'title': 'Merkle root',                                                                                                                              
-                    'ui:widget': 'merkleRoot',                                                                                                                           
-                    "ui:options": {                                                                                                                                      
-                        "blockchain": "ethereum",                                                                                                                             
-                    }                                                                                                                                                    
-                }]                                                                                                                                                       
-            }                   
+
+         'setRoot': {
+                'title': 'Set Merkle Root',
+                'sorting_order': 20,
+                'description': 'Set root of Merkle Tree',
+                'inputs': [{
+                    'title': 'Merkle root',
+                    'ui:widget': 'merkleRoot',
+                    "ui:options": {
+                        "blockchain": "ethereum",
+                    }
+                }]
+            }
         }
 
         return {
@@ -112,34 +120,34 @@ class Constructor(ConstructorInstance):
     _TEMPLATE = """
 pragma solidity ^0.4.20;
 
-library SafeMath {                                                                                                            
-  function mul(uint256 a, uint256 b) internal pure returns (uint256) {                                                        
-    if (a == 0) {                                                                                                             
-      return 0;                                                                                                               
-    }                                                                                                                         
-    uint256 c = a * b;                                                                                                        
-    assert(c / a == b);                                                                                                       
-    return c;                                                                                                                 
-  }                                                                                                                           
-                                                                                                                              
-  function div(uint256 a, uint256 b) internal pure returns (uint256) {                                                        
-    // assert(b > 0); // Solidity automatically throws when dividing by 0                                                     
-    uint256 c = a / b;                                                                                                        
-    // assert(a == b * c + a % b); // There is no case in which this doesn't hold                                             
-    return c;                                                                                                                 
-  }                                                                                                                           
-                                                                                                                              
-  function sub(uint256 a, uint256 b) internal pure returns (uint256) {                                                        
-    assert(b <= a);                                                                                                           
-    return a - b;                                                                                                             
-  }                                                                                                                           
-                                                                                                                              
-  function add(uint256 a, uint256 b) internal pure returns (uint256) {                                                        
-    uint256 c = a + b;                                                                                                        
-    assert(c >= a);                                                                                                           
-    return c;                                                                                                                 
-  }                                                                                                                           
-}                         
+library SafeMath {
+  function mul(uint256 a, uint256 b) internal pure returns (uint256) {
+    if (a == 0) {
+      return 0;
+    }
+    uint256 c = a * b;
+    assert(c / a == b);
+    return c;
+  }
+
+  function div(uint256 a, uint256 b) internal pure returns (uint256) {
+    // assert(b > 0); // Solidity automatically throws when dividing by 0
+    uint256 c = a / b;
+    // assert(a == b * c + a % b); // There is no case in which this doesn't hold
+    return c;
+  }
+
+  function sub(uint256 a, uint256 b) internal pure returns (uint256) {
+    assert(b <= a);
+    return a - b;
+  }
+
+  function add(uint256 a, uint256 b) internal pure returns (uint256) {
+    uint256 c = a + b;
+    assert(c >= a);
+    return c;
+  }
+}
 
 contract Ownable {
   address public owner;
@@ -407,7 +415,7 @@ contract MintableToken is StandardToken, Ownable {
     totalSupply_ = totalSupply_.add(_amount);
     balances[_to] = balances[_to].add(_amount);
     Mint(_to, _amount);
-  }   
+  }
 }
 
 
@@ -416,7 +424,7 @@ contract MerkleAirdrop {
     address owner;
     bytes32 public merkleRoot;
 
-    // address of contract, having "transfer" function 
+    // address of contract, having "transfer" function
     // airdrop contract must have ENOUGH TOKENS in its balance to perform transfer
     MintableToken public token_contract;
 
