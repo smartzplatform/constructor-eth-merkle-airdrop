@@ -28,7 +28,7 @@ class Constructor(ConstructorInstance):
                 },
                 "merkleRoot": {
                     "title": "Airdrop whitelist",
-                    "description": "Upload .txt file with your Airdrop participant list. File format is <address> <amount in Wei> (one address per line), see (example here)[TODO: ADD LINK]. Be aware that amout of tokens should be set in Wei (smallest quant of your token). File will be converted into Merkle Tree format and uploaded to IPFS. Merkle root and file IPFS address will be added to the Airdrop contract.",
+                    "description": "Upload .txt file with your Airdrop participant list. File format is <address> <amount in Wei> (one address per line), see (example https://ipfs.io/ipfs/QmcnbeYUmYfRreMuoQSR6R4FpjV155rrjatJ2XQMg5H26u/airdrop_list.txt). Be aware that amout of tokens should be set in Wei (smallest quant of your token). File will be converted into Merkle Tree format and uploaded to IPFS. Merkle root and file IPFS address will be added to the Airdrop contract.",
                     "$ref": "#/definitions/hash"
                 },
             }
@@ -64,7 +64,7 @@ class Constructor(ConstructorInstance):
     def post_construct(self, fields, abi_array):
 
         function_titles = {
-            'mintByMerkleProof': {
+            'getTokensByMerkleProof': {
                 'title': 'Get tokens',
                 'sorting_order': 30,
                 'description': 'Get Airdrop tokens if your address is in the whitelist.',
@@ -101,7 +101,7 @@ class Constructor(ConstructorInstance):
                 'description': 'If you want to change your Airdrop participant list in any way, upload full new list here.',
                 'inputs': [{
                     'title': 'Merkle root',
-                    'description': 'Upload .txt file with your Airdrop participant list. File format is <address> <amount in Wei> (one address per line), see (example here)[TODO: ADD LINK]. Be aware that amout of tokens should be set in Wei (smallest quant of your token). File will be converted into Merkle Tree format and uploaded to IPFS. Merkle root and file IPFS address will be added to the Airdrop contract.',
+                    'description': 'Upload .txt file with your Airdrop participant list. File format is <address> <amount in Wei> (one address per line), see (example https://ipfs.io/ipfs/QmcnbeYUmYfRreMuoQSR6R4FpjV155rrjatJ2XQMg5H26u/airdrop_list.txt). Be aware that amout of tokens should be set in Wei (smallest quant of your token). File will be converted into Merkle Tree format and uploaded to IPFS. Merkle root and file IPFS address will be added to the Airdrop contract.',
                     'ui:widget': 'merkleRoot',
                     "ui:options": {
                         "blockchain": "ethereum",
@@ -515,7 +515,7 @@ contract MerkleAirdrop {
     }
 
 
-    function mintByMerkleProof(bytes32[] _proof, address _who, uint256 _amount) public returns(bool) {
+    function getTokensByMerkleProof(bytes32[] _proof, address _who, uint256 _amount) public returns(bool) {
         require(spent[_who] != true);
         require(_amount > 0);
         // require(msg.sender = _who); // makes not possible to mint tokens for somebody, uncomment for more strict version
