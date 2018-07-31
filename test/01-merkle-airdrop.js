@@ -94,7 +94,7 @@ contract('MerkleAirdrop', function(accs) {
 			let airdropContractBalance = await mintableToken.balanceOf(merkleAirdrop.address);
 			let userTokenBalance = await mintableToken.balanceOf(userAddress);
 
-			assert.isOk(await merkleAirdrop.mintByMerkleProof(merkle_proof, userAddress, numTokens), 'mintByMerkleProof() did not return true for a valid proof');
+			assert.isOk(await merkleAirdrop.getTokensByMerkleProof(merkle_proof, userAddress, numTokens), 'getTokensByMerkleProof() did not return true for a valid proof');
 
 			assertBnEq(await mintableToken.balanceOf(merkleAirdrop.address), airdropContractBalance.minus(numTokens), "balance of airdrop contract was not decreased by numTokens");
 			assertBnEq(await mintableToken.balanceOf(userAddress), userTokenBalance.plus(numTokens), "balance of user was not increased by numTokens");
@@ -124,7 +124,7 @@ contract('MerkleAirdrop', function(accs) {
 		let airdropContractBalance = await mintableToken.balanceOf(merkleAirdrop.address);
 		let userTokenBalance = await mintableToken.balanceOf(userAddress);
 
-		assert.isOk(await merkleAirdrop.mintByMerkleProof(merkle_proof, userAddress, numTokens), 'mintByMerkleProof() did not return true for a valid proof');
+		assert.isOk(await merkleAirdrop.getTokensByMerkleProof(merkle_proof, userAddress, numTokens), 'getTokensByMerkleProof() did not return true for a valid proof');
 		assertBnEq(await mintableToken.balanceOf(merkleAirdrop.address), airdropContractBalance.minus(numTokens), "balance of airdrop contract was not decreased by numTokens");
 		assertBnEq(await mintableToken.balanceOf(userAddress), userTokenBalance.plus(numTokens), "balance of user was not increased by numTokens");
     });

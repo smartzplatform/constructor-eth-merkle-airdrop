@@ -116,7 +116,7 @@ contract MerkleAirdrop {
     }
 
 
-    function mintByMerkleProof(bytes32[] _proof, address _who, uint256 _amount) public returns(bool) {
+    function getTokensByMerkleProof(bytes32[] _proof, address _who, uint256 _amount) public returns(bool) {
         require(spent[_who] != true);
         require(_amount > 0);
         // require(msg.sender = _who); // makes not possible to mint tokens for somebody, uncomment for more strict version
