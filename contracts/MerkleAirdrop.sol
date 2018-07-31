@@ -23,35 +23,37 @@ contract MerkleAirdrop {
 
     address owner;
     bytes32 public merkleRoot;
+	// string public ipfsHash;
 
     // address of contract, having "transfer" function
     // airdrop contract must have ENOUGH TOKENS in its balance to perform transfer
-    MintableToken token_contract;
+    MintableToken tokenContract;
 
     // fix already minted addresses
     mapping (address => bool) spent;
     event AirdropTransfer(address addr, uint256 num);
 
-    constructor(address _token_contract, bytes32 _merkleRoot) public {
+    constructor(address _tokenContract, bytes32 _merkleRoot) public {
         owner = msg.sender;
-        token_contract = MintableToken(_token_contract);
+        tokenContract = MintableToken(_tokenContract);
         merkleRoot = _merkleRoot;
     }
 
-    function setRoot(bytes32 _merkleRoot) public { // onlyOwner [FIXME]
+
+    function setRoot(bytes32 _merkleRoot) public {
         require(msg.sender == owner);
         merkleRoot = _merkleRoot;
     }
 
 	function contractTokenBalance() public view returns(uint) {
-		return token_contract.balanceOf(address(this));
+		return tokenContract.balanceOf(address(this));
 	}
 
     function claim_rest_of_tokens_and_selfdestruct() public returns(bool) {
         // only owner
         require(msg.sender == owner);
-        require(token_contract.balanceOf(address(this)) >= 0);
-        require(token_contract.transfer(owner, token_contract.balanceOf(address(this))));
+        require(tokenContract.balanceOf(address(this)) >= 0);
+        require(tokenContract.transfer(owner, tokenContract.balanceOf(address(this))));
         selfdestruct(owner);
         return true;
     }
@@ -91,7 +93,7 @@ contract MerkleAirdrop {
         return string(bstr);
     }
 
-    function leaf_from_address_and_num_tokens(address _a, uint256 _n) public pure returns(bytes32 ) {
+    function leaf_from_address_and_num_tokens(address _a, uint256 _n) internal pure returns(bytes32 ) {
         string memory prefix = "0x";
         string memory space = " ";
 
@@ -125,7 +127,7 @@ contract MerkleAirdrop {
 
         spent[_who] = true;
 
-        if (token_contract.transfer(_who, _amount) == true) {
+        if (tokenContract.transfer(_who, _amount) == true) {
             emit AirdropTransfer(_who, _amount);
             return true;
         }
@@ -133,7 +135,7 @@ contract MerkleAirdrop {
         require(false);
     }
 
-    function checkProof(bytes32[] proof, bytes32 hash) view public returns (bool) {
+    function checkProof(bytes32[] proof, bytes32 hash) view internal returns (bool) {
         bytes32 el;
         bytes32 h = hash;
 
