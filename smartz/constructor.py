@@ -73,6 +73,8 @@ class Constructor(ConstructorInstance):
                     'ui:widget': 'merkleProof',
                     'ui:options': {
                         'blockchain': 'ethereum',
+                        'addressInputPosition': 1,
+                        'tokensInputPosition': 2,
                     }
                 },{
                     'title': 'Requesting address',
