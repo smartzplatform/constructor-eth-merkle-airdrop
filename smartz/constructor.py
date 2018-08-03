@@ -67,16 +67,19 @@ class Constructor(ConstructorInstance):
             'merkleRoot': {
                 'title': 'Merkle root',
                 'description': 'Merkle-tree root of airdrop whitelist. Can be hard to be built by browser(processing possibly a big file), so have a patience.',
+                'sorting_order': 20,
             },
 
             'tokenContract': {
                 'title': 'Token contract',
                 'description': 'Address of airdrop token contract, this token is being distributed. Airdrop contract must have non-zero balance of tokens to distribute them',
+                'sorting_order': 10,
             },
 
             'contractTokenBalance': {
                 'title': 'Airdrop token balance',
                 'description': 'This amount tokens is now waiting on airdrop contract to be claimed.',
+                'sorting_order': 30,
             },
 
             'claim_rest_of_tokens_and_selfdestruct': {
@@ -85,12 +88,13 @@ class Constructor(ConstructorInstance):
                 'icon': {
                     'pack': 'materialdesignicons',
                     'name': 'close-outline'
-                }
+                },
+                'sorting_order': 130,
             },
 
             'getTokensByMerkleProof': {
                 'title': 'Claim my tokens',
-                'sorting_order': 10,
+                'sorting_order': 110,
                 'description': 'Claim tokens from Airdrop contract if your address is in the whitelist.',
                 'inputs': [{
                     'title': 'IPFS path to file with addresses whitelist',
@@ -113,7 +117,7 @@ class Constructor(ConstructorInstance):
 
             'setRoot': {
                 'title': 'Update airdrop whitelist',
-                'sorting_order': 20,
+                'sorting_order': 120,
                 'description': 'If you want to change your Airdrop participant list in any way, upload full new list here.',
                 'inputs': [{
                     'title': 'Merkle root',
@@ -133,7 +137,7 @@ class Constructor(ConstructorInstance):
         return {
             "result": "success",
             'function_specs': function_titles,
-            'dashboard_functions': ['token_contract', 'contractTokenBalance']
+            'dashboard_functions': ['tokenContract', 'contractTokenBalance']
         }
 
 
