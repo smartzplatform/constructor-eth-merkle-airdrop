@@ -28,7 +28,7 @@ class Constructor(ConstructorInstance):
                 },
                 "merkleRoot": {
                     "title": "Airdrop whitelist",
-                    "description": "Upload .txt file with your Airdrop participant list. File format is <address> <amount in Wei> (one address per line). BE AWARE that addresses should be in lower case and amout of tokens should be in Wei (smallest quant of your token). File will be automatically converted into Merkle Tree format and uploaded to IPFS. Merkle root will be saved to contract, but your should keep IPFS address and provide it to your airdrop users. Example whitelist file:  https://ipfs.io/ipfs/QmcnbeYUmYfRreMuoQSR6R4FpjV155rrjatJ2XQMg5H26u/airdrop_list.txt)",
+                    "description": "Upload .txt file with your Airdrop participant list. File format is <address> <amount in Wei> (one address per line). BE AWARE that addresses should be in lower case and amout of tokens should be in Wei (smallest quant of your token). File will be automatically converted into Merkle Tree format and uploaded to IPFS. Merkle root will be saved to contract, but your should keep IPFS address and provide it to your airdrop users. Example whitelist file:\nhttps://ipfs.io/ipfs/QmcnbeYUmYfRreMuoQSR6R4FpjV155rrjatJ2XQMg5H26u/airdrop_list.txt\n",
                     "$ref": "#/definitions/hash"
                 },
             }
@@ -66,12 +66,12 @@ class Constructor(ConstructorInstance):
         function_titles = {
             'merkleRoot': {
                 'title': 'Merkle root',
-                'description': 'Merkle tree root of airdrop whitelist.',
+                'description': 'Merkle-tree root of airdrop whitelist. Can be hard to be built by browser(processing possibly a big file), so have a patience.',
             },
 
-            'token_contract': {
+            'tokenContract': {
                 'title': 'Token contract',
-                'description': 'Address of airdrop token contract, this token is being distributed.',
+                'description': 'Address of airdrop token contract, this token is being distributed. Airdrop contract must have non-zero balance of tokens to distribute them',
             },
 
             'contractTokenBalance': {
@@ -89,11 +89,11 @@ class Constructor(ConstructorInstance):
             },
 
             'getTokensByMerkleProof': {
-                'title': 'Get tokens',
-                'sorting_order': 30,
-                'description': 'Get Airdrop tokens if your address is in the whitelist.',
+                'title': 'Claim my tokens',
+                'sorting_order': 10,
+                'description': 'Claim tokens from Airdrop contract if your address is in the whitelist.',
                 'inputs': [{
-                    'title': 'Merkle tree IPFS address',
+                    'title': 'IPFS path to file with addresses whitelist',
                     'ui:widget': 'merkleProof',
                     'ui:options': {
                         'blockchain': 'ethereum',
@@ -109,21 +109,6 @@ class Constructor(ConstructorInstance):
                     'pack': 'materialdesignicons',
                     'name': 'arrow-down-thick'
                 }
-            },
-
-           'checkProof': {
-                'title': 'Check address',
-                'sorting_order': 35,
-                'description': 'Check is your address in Airdrop whitelist',
-                'inputs': [{
-                    'title': 'Merkle proof',
-                    'ui:widget': 'merkleProof',
-                    'ui:options': {
-                        'blockchain': 'ethereum',
-                    }
-                },{
-                    'title': 'leaf',
-                }]
             },
 
             'setRoot': {
@@ -462,7 +447,7 @@ contract MerkleAirdrop {
 
     // address of contract, having "transfer" function
     // airdrop contract must have ENOUGH TOKENS in its balance to perform transfer
-    MintableToken public token_contract;
+    MintableToken public tokenContract;
 
     // fix already minted addresses
     mapping (address => bool) spent;
@@ -470,24 +455,23 @@ contract MerkleAirdrop {
 
     function MerkleAirdrop(address _tokenAddress, bytes32 _merkleRoot) public {
         owner = msg.sender;
-        token_contract = MintableToken(%token_address%);
+        tokenContract = MintableToken(%token_address%);
         merkleRoot = %merkle_root%;
     }
-
-    function setRoot(bytes32 _merkleRoot) public { // onlyOwner [FIXME]
+    function setRoot(bytes32 _merkleRoot) public {
         require(msg.sender == owner);
         merkleRoot = _merkleRoot;
     }
 
-	function contractTokenBalance() public view returns(uint) {
-		return token_contract.balanceOf(address(this));
-	}
+    function contractTokenBalance() public view returns(uint) {
+        return tokenContract.balanceOf(address(this));
+    }
 
     function claim_rest_of_tokens_and_selfdestruct() public returns(bool) {
         // only owner
         require(msg.sender == owner);
-        require(token_contract.balanceOf(address(this)) >= 0);
-        require(token_contract.transfer(owner, token_contract.balanceOf(address(this))));
+        require(tokenContract.balanceOf(address(this)) >= 0);
+        require(tokenContract.transfer(owner, tokenContract.balanceOf(address(this))));
         selfdestruct(owner);
         return true;
     }
@@ -527,7 +511,7 @@ contract MerkleAirdrop {
         return string(bstr);
     }
 
-    function leaf_from_address_and_num_tokens(address _a, uint256 _n) public pure returns(bytes32 ) {
+    function leaf_from_address_and_num_tokens(address _a, uint256 _n) internal pure returns(bytes32 ) {
         string memory prefix = "0x";
         string memory space = " ";
 
@@ -561,15 +545,15 @@ contract MerkleAirdrop {
 
         spent[_who] = true;
 
-        if (token_contract.transfer(_who, _amount) == true) {
+        if (tokenContract.transfer(_who, _amount) == true) {
             AirdropTransfer(_who, _amount);
             return true;
         }
-		// throw if transfer fails, no need to spend gaz
+        // throw if transfer fails, no need to spend gaz
         require(false);
     }
 
-    function checkProof(bytes32[] proof, bytes32 hash) view public returns (bool) {
+    function checkProof(bytes32[] proof, bytes32 hash) view internal returns (bool) {
         bytes32 el;
         bytes32 h = hash;
 
