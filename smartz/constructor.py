@@ -82,6 +82,10 @@ class Constructor(ConstructorInstance):
             'claim_rest_of_tokens_and_selfdestruct': {
                 'title': 'Cancel airdrop',
                 'description': 'Owner only function, which sends rest of tokens to owner and destroys airdrop contract.',
+                'icon': {
+                    'pack': 'materialdesignicons',
+                    'name': 'close-outline'
+                }
             },
 
             'getTokensByMerkleProof': {
@@ -100,7 +104,11 @@ class Constructor(ConstructorInstance):
                     'title': 'Requesting address',
                 },{
                     'title': 'Requesting tokens amount',
-                }]
+                }],
+                'icon': {
+                    'pack': 'materialdesignicons',
+                    'name': 'arrow-down-thick'
+                }
             },
 
            'checkProof': {
@@ -118,7 +126,7 @@ class Constructor(ConstructorInstance):
                 }]
             },
 
-         'setRoot': {
+            'setRoot': {
                 'title': 'Update airdrop whitelist',
                 'sorting_order': 20,
                 'description': 'If you want to change your Airdrop participant list in any way, upload full new list here.',
@@ -129,14 +137,18 @@ class Constructor(ConstructorInstance):
                     "ui:options": {
                         "blockchain": "ethereum",
                     }
-                }]
+                }],
+                'icon': {
+                    'pack': 'materialdesignicons',
+                    'name': 'briefcase-upload'
+                }
             }
         }
 
         return {
             "result": "success",
             'function_specs': function_titles,
-            'dashboard_functions': ['contractTokenBalance']
+            'dashboard_functions': ['token_contract', 'contractTokenBalance']
         }
 
 
