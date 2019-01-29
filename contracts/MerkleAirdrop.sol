@@ -23,6 +23,7 @@ contract MerkleAirdrop {
 
     address owner;
     bytes32 public merkleRoot;
+    bool cancelable;
 	// string public ipfsHash;
 
     // address of contract, having "transfer" function
@@ -33,10 +34,16 @@ contract MerkleAirdrop {
     mapping (address => bool) spent;
     event AirdropTransfer(address addr, uint256 num);
 
-    constructor(address _tokenContract, bytes32 _merkleRoot) public {
+    modifier isCancelable() {
+        require(cancelable == true, 'forbidden action');
+        _;
+    }
+
+    constructor(address _tokenContract, bytes32 _merkleRoot, bool _cancelable) public {
         owner = msg.sender;
         tokenContract = MintableToken(_tokenContract);
         merkleRoot = _merkleRoot;
+        cancelable = _cancelable;
     }
 
 
@@ -49,7 +56,7 @@ contract MerkleAirdrop {
 		return tokenContract.balanceOf(address(this));
 	}
 
-    function claim_rest_of_tokens_and_selfdestruct() public returns(bool) {
+    function claim_rest_of_tokens_and_selfdestruct() public isCancelable returns(bool) {
         // only owner
         require(msg.sender == owner);
         require(tokenContract.balanceOf(address(this)) >= 0);

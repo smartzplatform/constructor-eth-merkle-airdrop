@@ -31,6 +31,12 @@ class Constructor(ConstructorInstance):
                     "description": "Upload .txt file with your Airdrop participant list. File format is <address> <amount in Wei> (one address per line). BE AWARE that addresses should be in lower case and amout of tokens should be in Wei (smallest quant of your token). File will be automatically converted into Merkle Tree format and uploaded to IPFS. Merkle root will be saved to contract, but your should keep IPFS address and provide it to your airdrop users. Example whitelist file:\nhttps://ipfs.io/ipfs/QmcnbeYUmYfRreMuoQSR6R4FpjV155rrjatJ2XQMg5H26u/airdrop_list.txt\n",
                     "$ref": "#/definitions/hash"
                 },
+                "cancelable": {
+                    "type": "boolean",
+                    "default": True,
+                    "title": "Airdrop cancellation flag",
+                    "description": "This is a flag that makes possible for a contract owner to claim the rest of tokens and destruct it"
+                }
             }
         }
 
@@ -51,9 +57,16 @@ class Constructor(ConstructorInstance):
 
     def construct(self, fields):
 
+        cancelable_str = ''
+        if fields['cancelable']:
+            cancelable_str += 'true'
+        else:
+            cancelable_str += 'false'
+
         source = self.__class__._TEMPLATE \
             .replace('%token_address%', fields['tokenAddress']) \
-            .replace('%merkle_root%', fields['merkleRoot']);
+            .replace('%merkle_root%', fields['merkleRoot']) \
+            .replace('%cancelable%', cancelable_str)
 
         return {
             "result": "success",
@@ -448,7 +461,7 @@ contract MerkleAirdrop {
 
     address owner;
     bytes32 public merkleRoot;
-
+    bool cancelable;
     // address of contract, having "transfer" function
     // airdrop contract must have ENOUGH TOKENS in its balance to perform transfer
     MintableToken public tokenContract;
@@ -456,11 +469,17 @@ contract MerkleAirdrop {
     // fix already minted addresses
     mapping (address => bool) spent;
     event AirdropTransfer(address addr, uint256 num);
+    
+    modifier isCancelable() {
+        require(cancelable == true);
+        _;
+    }
 
-    function MerkleAirdrop(address _tokenAddress, bytes32 _merkleRoot) public {
+    function MerkleAirdrop(address _tokenAddress, bytes32 _merkleRoot, bool _cancelable) public {
         owner = msg.sender;
         tokenContract = MintableToken(%token_address%);
         merkleRoot = %merkle_root%;
+        cancelable = %cancelable%;
     }
     function setRoot(bytes32 _merkleRoot) public {
         require(msg.sender == owner);
@@ -471,7 +490,7 @@ contract MerkleAirdrop {
         return tokenContract.balanceOf(address(this));
     }
 
-    function claim_rest_of_tokens_and_selfdestruct() public returns(bool) {
+    function claim_rest_of_tokens_and_selfdestruct() public isCancelable returns(bool) {
         // only owner
         require(msg.sender == owner);
         require(tokenContract.balanceOf(address(this)) >= 0);

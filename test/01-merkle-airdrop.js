@@ -50,6 +50,8 @@ contract('MerkleAirdrop', function(accs) {
 		return leafs;
 	}
 
+	const CANCELABLE = false;
+
    it("generates many addresses(of file optionally) for test, reads them and builds merkleTree", async function() {
    		// return true;
         this.timeout(10000);
@@ -71,7 +73,7 @@ contract('MerkleAirdrop', function(accs) {
 	it("tests deployment of airdrop contract and minting tokens for airdrop", async function() {
 		// deploy token contract, then give many tokens to deployed airdrop contract.
 		mintableToken = await MintableToken.new({from: roles.owner});
-		merkleAirdrop = await MerkleAirdrop.new(mintableToken.address, merkleRootHex, {from: roles.owner});
+		merkleAirdrop = await MerkleAirdrop.new(mintableToken.address, merkleRootHex, CANCELABLE, {from: roles.owner});
 		assert.equal(await merkleAirdrop.merkleRoot(), merkleTree.getHexRoot());
 
 		await mintableToken.mint(merkleAirdrop.address, TOTAL_TOKENS_FOR_AIRDROP, {from: roles.owner});
@@ -129,17 +131,21 @@ contract('MerkleAirdrop', function(accs) {
 		assertBnEq(await mintableToken.balanceOf(userAddress), userTokenBalance.plus(numTokens), "balance of user was not increased by numTokens");
     });
 
-   	it("tests for claiming all tokens on contract's balance and selfdestruct", async function() {
-		let startAirdropContractBalance = await mintableToken.balanceOf(merkleAirdrop.address)
-		let startUserBalance = await mintableToken.balanceOf(roles.owner);
+ 	//if (CANCELABLE == true) {
+	it("tests for claiming all tokens on contract's balance and selfdestruct", async function() {
+	let startAirdropContractBalance = await mintableToken.balanceOf(merkleAirdrop.address)
+	let startUserBalance = await mintableToken.balanceOf(roles.owner);
 
-		await expectThrow(merkleAirdrop.claim_rest_of_tokens_and_selfdestruct({from: roles.user1}), 'claiming rest of tokens by not owner did not broke call');
-		assert.isOk(await merkleAirdrop.claim_rest_of_tokens_and_selfdestruct({from: roles.owner}), 'claiming rest of tokens by owner did not return true');
-		assertBnEq(await mintableToken.balanceOf(roles.owner), startUserBalance.plus(startAirdropContractBalance), "balance of owned was not increased after caliming all rest of tokens");
-		assertBnEq(await mintableToken.balanceOf(merkleAirdrop.address), 0, "balance of contract after claiming tokens not zero");
+	await expectThrow(merkleAirdrop.claim_rest_of_tokens_and_selfdestruct({from: roles.user1}), 'claiming rest of tokens by not owner did not broke call');
+	assert.isOk(await merkleAirdrop.claim_rest_of_tokens_and_selfdestruct({from: roles.owner}), 'claiming rest of tokens by owner did not return true');
+	assertBnEq(await mintableToken.balanceOf(roles.owner), startUserBalance.plus(startAirdropContractBalance), "balance of owned was not increased after caliming all rest of tokens");
+	assertBnEq(await mintableToken.balanceOf(merkleAirdrop.address), 0, "balance of contract after claiming tokens not zero");
 	});
-
-
+	//} else {
+	it("test for tokens claiming method-call revert", async function () {
+		await expectThrow(merkleAirdrop.claim_rest_of_tokens_and_selfdestruct({from: roles.owner}), 'claiming is forbidden in this contract');
+	});
+	//}
 	// [FIXME] [FIXME] add more and more tests!!!
 
 });
