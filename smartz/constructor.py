@@ -57,11 +57,7 @@ class Constructor(ConstructorInstance):
 
     def construct(self, fields):
 
-        cancelable_str = ''
-        if fields['cancelable']:
-            cancelable_str += 'true'
-        else:
-            cancelable_str += 'false'
+        cancelable_str = 'true' if fields['cancelable'] else 'false'
 
         source = self.__class__._TEMPLATE \
             .replace('%token_address%', fields['tokenAddress']) \
@@ -93,6 +89,12 @@ class Constructor(ConstructorInstance):
                 'title': 'Airdrop token balance',
                 'description': 'This amount tokens is now waiting on airdrop contract to be claimed.',
                 'sorting_order': 30,
+            },
+
+            'cancelable': {
+                'title': 'Cancellation availability',
+                'description': 'Flag which defines whether airdrop can be cancelled',
+                'sorting_order': 40,
             },
 
             'claim_rest_of_tokens_and_selfdestruct': {
@@ -150,7 +152,7 @@ class Constructor(ConstructorInstance):
         return {
             "result": "success",
             'function_specs': function_titles,
-            'dashboard_functions': ['tokenContract', 'contractTokenBalance']
+            'dashboard_functions': ['tokenContract', 'contractTokenBalance', 'cancelable']
         }
 
 
@@ -461,7 +463,7 @@ contract MerkleAirdrop {
 
     address owner;
     bytes32 public merkleRoot;
-    bool cancelable;
+    bool public cancelable;
     // address of contract, having "transfer" function
     // airdrop contract must have ENOUGH TOKENS in its balance to perform transfer
     MintableToken public tokenContract;
@@ -471,11 +473,11 @@ contract MerkleAirdrop {
     event AirdropTransfer(address addr, uint256 num);
     
     modifier isCancelable() {
-        require(cancelable == true);
+        require(cancelable, "forbidden action");
         _;
     }
 
-    function MerkleAirdrop(address _tokenAddress, bytes32 _merkleRoot, bool _cancelable) public {
+    function MerkleAirdrop() public {
         owner = msg.sender;
         tokenContract = MintableToken(%token_address%);
         merkleRoot = %merkle_root%;

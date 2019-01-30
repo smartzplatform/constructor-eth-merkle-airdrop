@@ -23,7 +23,7 @@ contract MerkleAirdrop {
 
     address owner;
     bytes32 public merkleRoot;
-    bool cancelable;
+    bool public cancelable;
 	// string public ipfsHash;
 
     // address of contract, having "transfer" function
@@ -35,7 +35,7 @@ contract MerkleAirdrop {
     event AirdropTransfer(address addr, uint256 num);
 
     modifier isCancelable() {
-        require(cancelable == true, 'forbidden action');
+        require(cancelable, 'forbidden action');
         _;
     }
 
