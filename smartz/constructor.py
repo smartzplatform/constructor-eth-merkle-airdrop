@@ -158,7 +158,7 @@ class Constructor(ConstructorInstance):
 
     # language=Solidity
     _TEMPLATE = """
-pragma solidity ^0.4.20;
+pragma solidity ^0.4.18;
 
 library SafeMath {
   function mul(uint256 a, uint256 b) internal pure returns (uint256) {
@@ -477,12 +477,15 @@ contract MerkleAirdrop {
         _;
     }
 
-    function MerkleAirdrop() public {
+    function MerkleAirdrop() public payable {
         owner = msg.sender;
         tokenContract = MintableToken(%token_address%);
         merkleRoot = %merkle_root%;
         cancelable = %cancelable%;
+        
+        %payment_code%
     }
+    
     function setRoot(bytes32 _merkleRoot) public {
         require(msg.sender == owner);
         merkleRoot = _merkleRoot;
