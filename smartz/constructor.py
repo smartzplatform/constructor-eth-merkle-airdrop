@@ -158,7 +158,7 @@ class Constructor(ConstructorInstance):
 
     # language=Solidity
     _TEMPLATE = """
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.20;
 
 library SafeMath {
   function mul(uint256 a, uint256 b) internal pure returns (uint256) {
